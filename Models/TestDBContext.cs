@@ -7,26 +7,36 @@ namespace WebApp.Models
 {
     public partial class TestDBContext : DbContext
     {
-        private readonly IConfiguration _config;
+        public TestDBContext()
+        {
+        }
 
-        public TestDBContext(DbContextOptions<TestDBContext> options, IConfiguration config)
+        public TestDBContext(DbContextOptions<TestDBContext> options)
             : base(options)
         {
-            _config = config;
         }
 
+        public virtual DbSet<City> Cities { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(_config.GetConnectionString("Default"));
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<City>(entity =>
+            {
+                entity.ToTable("City");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PostalCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<User>(entity =>
             {
                 entity.Property(e => e.Email).HasMaxLength(50);
